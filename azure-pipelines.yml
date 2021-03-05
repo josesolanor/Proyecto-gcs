@@ -56,6 +56,6 @@ steps:
    echo  ========== Starting: Copiando al Servidor   
    echo $(SERVER_KEY) | base64 -di > ~/webserver_key.pem
    sudo chmod 600 ~/webserver_key.pem    
-   scp -o StrictHostKeyChecking=no -i ~/server_key.pem $(Agent.BuildDirectory)/s/gcs-app/target/rpm/RPMS/noarch/gcs-app-2.8.x-1.noarch.rpm azureuser@20.83.169.180:.
+   scp -o StrictHostKeyChecking=no -i ~/server_key.pem $(Agent.BuildDirectory)/s/gcs-app/target/rpm/RPMS/noarch/gcs-app-2.8.x-1.noarch.rpm azureuser@13.68.154.100:.
    echo  ========== Finishing: Copiando al Servidor
   displayName: 'Deploy Phase'
