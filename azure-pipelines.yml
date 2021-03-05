@@ -26,7 +26,7 @@ steps:
 
 - script:  |
    echo ========== Starting: Compiling ==========
-   git clone https://github.com/josesolanor/proyecto-gcs-final.git
+   git clone https://github.com/josesolanor/Proyecto-gcs.git
    cd proyecto-gcs-final
    sbt compile
    echo  ========== Finishing: Compiling
