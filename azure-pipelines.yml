@@ -32,12 +32,12 @@ steps:
   name: DataBaseKey
   displayName: "Descargar Llave Privada de Servidor de Base de Datos"
   inputs:
-   secureFile: "srv-postgres_key.pem"
+   secureFile: "dbserver-01_key.pem"
 - task: DownloadSecureFile@1
   name: AppServerKey
   displayName: "Descargar Llave Privada de Servidor de Aplicaciones"
   inputs:
-   secureFile: "svr-balancer_key.pem"
+   secureFile: "webserver-01_key.pem"
    
 - script: sudo cp $(AppServerKey.secureFilePath) /home/vsts/ && sudo chmod 600 /home/vsts/svr-balancer_key.pem
   displayName: "Aplicando Permisos"
