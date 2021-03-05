@@ -26,7 +26,7 @@ steps:
 
 - script:  |
    echo ========== Starting: Compiling ==========
-   git clone https://github.com/josesolanor/Proyecto-gcs.git
+   git clone https://github.com/hguzmanc/proyecto-gsc.git
    cd proyecto-gcs-final
    sbt compile
    echo  ========== Finishing: Compiling
@@ -56,6 +56,15 @@ steps:
    echo  ========== Starting: Copiando al Servidor   
    echo $(SERVER_KEY) | base64 -di > ~/webserver_key.pem
    sudo chmod 600 ~/webserver_key.pem    
-   scp -o StrictHostKeyChecking=no -i ~/server_key.pem $(Agent.BuildDirectory)/s/gcs-app/target/rpm/RPMS/noarch/gcs-app-2.8.x-1.noarch.rpm azureuser@13.68.154.100:.
+   scp -o StrictHostKeyChecking=no -i ~/server_key.pem $(Agent.BuildDirectory)/s/gcs-app/target/rpm/RPMS/noarch/gcs-app-2.8.x-1.noarch.rpm azureuser@20.83.169.180:.
    echo  ========== Finishing: Copiando al Servidor
+  displayName: 'Deploy Phase'
+
+- script:  |
+   echo  ========== Starting: Instalando RPM
+   sudo rpm -i gcs-app-2.8.x-1.noarch.rpm
+   sudo chown -R gcs-app /usr/share/gcs-app/
+   sudo chgrp -R gcs-app /usr/share/gcs-app/
+   sudo systemctl start gcs-app
+   echo  ========== Finishing: Instalando RPM
   displayName: 'Deploy Phase'
