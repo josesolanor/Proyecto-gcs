@@ -59,12 +59,3 @@ steps:
    scp -o StrictHostKeyChecking=no -i ~/server_key.pem $(Agent.BuildDirectory)/s/gcs-app/target/rpm/RPMS/noarch/gcs-app-2.8.x-1.noarch.rpm azureuser@20.83.169.180:.
    echo  ========== Finishing: Copiando al Servidor
   displayName: 'Deploy Phase'
-
-- script:  |
-   echo  ========== Starting: Instalando RPM
-   sudo rpm -i gcs-app-2.8.x-1.noarch.rpm
-   sudo chown -R gcs-app /usr/share/gcs-app/
-   sudo chgrp -R gcs-app /usr/share/gcs-app/
-   sudo systemctl start gcs-app
-   echo  ========== Finishing: Instalando RPM
-  displayName: 'Deploy Phase'
