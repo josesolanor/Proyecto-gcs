@@ -7,12 +7,11 @@ trigger:
 - master
 
 pool:
- vmImage: 'Ubuntu-latest'
+  vmImage: ubuntu-18.04
 
 steps:
-
 - script: |  
-   echo ========== Starting: Instaling dependency ==========
+   echo ========== Starting: Instalando Dependencias ==========
    sudo apt-get -y update
    sudo apt-get -y install curl 
    echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
@@ -21,41 +20,49 @@ steps:
    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
    sudo apt-get -y update
    sudo apt-get -y install sbt git debianutils rpm ssh  
-   echo ========== Finishing: Instaling dependency ==========
-  displayName: 'Instaling dependency'
+   echo ========== Finishing: Instalando Dependencias ==========
+  displayName: 'Instalando Dependencias'
 
 - script:  |
-   echo ========== Starting: Compiling ==========
-   git clone https://github.com/hguzmanc/proyecto-gsc.git
-   cd proyecto-gcs-final
+   echo ========== Starting: Compilacion ==========
+   git clone https://github.com/josesolanor/Proyecto-gcs.git
+   cd Proyecto-gcs
    sbt compile
-   echo  ========== Finishing: Compiling
-   echo  ========== Starting: Init Test
+   echo  ========== Finishing: Compilacion
+   echo  ========== Starting: Pruebas Unitarias
    sudo sbt test
-   echo  ========== Finishing: Init Test
-  displayName: 'Commit Check Phase'
-    
+   echo  ========== Finishing: Pruebas Unitarias
+  displayName: 'Fase de Verificacion de Contribucion'
+
 - script:  |
-   echo  ========== Starting: Integration Test Phase
+   echo  ========== Starting: Fase de Verificacion de Pruebas de Integracion
    sudo systemctl start docker
    sudo docker run -d -e POSTGRES_PASSWORD=gcs -e POSTGRES_USER=gcs -e POSTGRES_DB=gcs -p 127.0.0.1:5432:5432 postgres:9.5
    export PGPASSWORD='gcs'
    until psql -h "127.0.0.1" -U "gcs" -c '\l'; do
-   >&2 echo "Database no esta lista - esperando..."
+   >&2 echo "Base de datos en espera"
    sleep 1
    done
-   >&2 echo "Database lista! ;)"
+   >&2 echo "Base de Datos listo"
    sbt "project gcsAppIT" test
-   echo  ========== Finishing: Integration Test Phase
-  displayName: 'Integration Test Phase'    
- 
+   echo  ========== Finishing: Fase de Verificacion de Pruebas de Integracion
+  displayName: 'Fase de Verificacion de Pruebas de Integracion'
+
 - script:  |
    echo  ========== Starting: Empaquetando
    sudo sbt rpm:packageBin    
    echo  ========== Finishing: Empaquetando
-   echo  ========== Starting: Copiando al Servidor   
-   echo $(SERVER_KEY) | base64 -di > ~/webserver_key.pem
-   sudo chmod 600 ~/webserver_key.pem    
-   scp -o StrictHostKeyChecking=no -i ~/server_key.pem $(Agent.BuildDirectory)/s/gcs-app/target/rpm/RPMS/noarch/gcs-app-2.8.x-1.noarch.rpm azureuser@20.83.169.180:.
+   echo  ========== Starting: Copiando al Servidor
+   mv $(Agent.BuildDirectory)/s/Proyecto-gcs/gcs-app/target/rpm/RPMS/noarch/gcs-app-2.8.x-1.noarch.rpm ~/gcs-app-2.8.x-1.noarch.rpm   
+   mkdir ~/.ssh
    echo  ========== Finishing: Copiando al Servidor
-  displayName: 'Deploy Phase'
+   echo  ========== Starting: Permisos y Despliegue
+   echo $(SSH_KEY) | base64 -di > ~/.ssh/id_rsa
+   sudo chmod 600 ~/.ssh/id_rsa
+   ssh -o "StrictHostKeyChecking no" azureuser@$(WEBSERVER_IP) "sudo sed -i '/dbserver/d' /etc/hosts"
+   ssh -o "StrictHostKeyChecking no" azureuser@$(WEBSERVER_IP) "sudo bash -c \"echo '$(DATABASE_IP)    dbserver' >> /etc/hosts\""
+   scp -o "StrictHostKeyChecking no" ~/gcs-app-2.8.x-1.noarch.rpm azureuser@$(WEBSERVER_IP):.
+   ssh -o "StrictHostKeyChecking no" azureuser@$(WEBSERVER_IP) "sudo dnf install -y ~/gcs-app-2.8.x-1.noarch.rpm"
+   echo  ========== Finishing: Permisos y Despliegue
+  displayName: 'Fase de Despliegue a servidor de pruebas'
+
