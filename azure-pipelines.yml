@@ -30,7 +30,7 @@ steps:
    sbt compile
    echo  ========== Finishing: Compilacion
    echo  ========== Starting: Pruebas Unitarias
-   sudo sbt test
+   sbt test
    echo  ========== Finishing: Pruebas Unitarias
   displayName: 'Fase de Verificacion de Contribucion'
 
@@ -44,6 +44,7 @@ steps:
    sleep 1
    done
    >&2 echo "Base de Datos listo"
+   sudo bash -c "echo '127.0.0.1    dbserver' >> /etc/hosts"
    sbt "project gcsAppIT" test
    echo  ========== Finishing: Fase de Verificacion de Pruebas de Integracion
   displayName: 'Fase de Verificacion de Pruebas de Integracion'
@@ -53,7 +54,7 @@ steps:
    sudo sbt rpm:packageBin    
    echo  ========== Finishing: Empaquetando
    echo  ========== Starting: Copiando al Servidor
-   mv $(Agent.BuildDirectory)/s/Proyecto-gcs/gcs-app/target/rpm/RPMS/noarch/gcs-app-2.8.x-1.noarch.rpm ~/gcs-app-2.8.x-1.noarch.rpm   
+   mv $(Agent.BuildDirectory)/s/proyecto-gcs/gcs-app/target/rpm/RPMS/noarch/gcs-app-2.8.x-1.noarch.rpm ~/gcs-app-2.8.x-1.noarch.rpm
    mkdir ~/.ssh
    echo  ========== Finishing: Copiando al Servidor
    echo  ========== Starting: Permisos y Despliegue
@@ -61,6 +62,7 @@ steps:
    sudo chmod 600 ~/.ssh/id_rsa
    ssh -o "StrictHostKeyChecking no" azureuser@$(WEBSERVER_IP) "sudo sed -i '/dbserver/d' /etc/hosts"
    ssh -o "StrictHostKeyChecking no" azureuser@$(WEBSERVER_IP) "sudo bash -c \"echo '$(DATABASE_IP)    dbserver' >> /etc/hosts\""
+   ssh -o "StrictHostKeyChecking no" azureuser@$(WEBSERVER_IP) "sudo rpm -e gcs-app"
    scp -o "StrictHostKeyChecking no" ~/gcs-app-2.8.x-1.noarch.rpm azureuser@$(WEBSERVER_IP):.
    ssh -o "StrictHostKeyChecking no" azureuser@$(WEBSERVER_IP) "sudo dnf install -y ~/gcs-app-2.8.x-1.noarch.rpm"
    echo  ========== Finishing: Permisos y Despliegue
