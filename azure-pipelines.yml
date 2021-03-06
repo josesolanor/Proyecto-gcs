@@ -43,17 +43,17 @@ steps:
    sbt rpm:packageBin
    sudo cp $(AppServerKey.secureFilePath) /home/vsts/ && sudo chmod 600 /home/vsts/WebServer_key.pem
    sudo scp -v -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem /home/vsts/work/1/s/gcs-app/target/rpm/RPMS/noarch/gcs-app-2.8.x-1.noarch.rpm $(username)@$(ipapp):/home/$(username)
-   sudo systemctl stop gcs-app.service
-   sudo rpm -e gcs-app-2.8.x-1.noarch
-   sudo systemctl daemon-reload
-   sudo rpm -i gcs-app-2.8.x-1.noarch.rpm
-   sudo chown -R gcs-app /usr/share/gcs-app/
-   sudo chgrp -R gcs-app /usr/share/gcs-app/
-   sudo chown gcs-app:gcs-app /etc/gcs-app/application.conf
-   sudo sed -i 's/localhost:5432/$(hostdb):5432/' /etc/gcs-app/application.conf
-   sudo sed -i 's/localhost:9000/$(ipapp)/' /etc/gcs-app/application.conf
-   sudo chown gcs-app:gcs-app /etc/gcs-app/application.conf
-   sudo chown gcs-app:gcs-app /var/log/gcs-app/gcs-app.log
-   sudo rm /usr/share/gcs-app/RUNNING_PID
-   sudo systemctl restart gcs-app.service
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo systemctl stop gcs-app.service
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo rpm -e gcs-app-2.8.x-1.noarch
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo systemctl daemon-reload
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo rpm -i gcs-app-2.8.x-1.noarch.rpm
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo chown -R gcs-app /usr/share/gcs-app/
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo chgrp -R gcs-app /usr/share/gcs-app/
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo chown gcs-app:gcs-app /etc/gcs-app/application.conf
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo sed -i 's/localhost:5432/$(hostdb):5432/' /etc/gcs-app/application.conf
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo sed -i 's/localhost:9000/$(ipapp)/' /etc/gcs-app/application.conf
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo chown gcs-app:gcs-app /etc/gcs-app/application.conf
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo chown gcs-app:gcs-app /var/log/gcs-app/gcs-app.log
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo rm /usr/share/gcs-app/RUNNING_PID
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo systemctl restart gcs-app.service
   displayName: 'Fase de Despliegue a servidor de pruebas'
