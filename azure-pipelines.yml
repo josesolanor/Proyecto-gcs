@@ -52,22 +52,24 @@ steps:
 - script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo rpm -i gcs-app-2.8.x-1.noarch.rpm
   displayName: 'Instalar Aplicacion'
 
-- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) "sudo chown -R gcs-app /usr/share/gcs-app/"
+- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo chown -R gcs-app /usr/share/gcs-app/
   displayName: 'Conceder Permisos al usuario'
 
-- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) "sudo chgrp -R gcs-app /usr/share/gcs-app/"
+- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo chgrp -R gcs-app /usr/share/gcs-app/
   displayName: 'Conceder Permisos al Grupo' 
 
-- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) "sudo chown gcs-app:gcs-app /etc/gcs-app/application.conf"
+- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo chown gcs-app:gcs-app /etc/gcs-app/application.conf
   displayName: 'Permisos al Archivo de Configuracion'
   
-- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) "sudo sed -i 's/localhost:5432/$(hostdb):5432/' -i 's/localhost:9000/$(ipapp)/' /etc/gcs-app/application.conf"
+- script: |
+  sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo sed -i 's/localhost:5432/$(hostdb):5432/' /etc/gcs-app/application.conf
+  sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo sed -i 's/localhost:9000/$(ipapp)/' /etc/gcs-app/application.conf
   displayName: 'Modificando Rutas al Archivo de Configuracion'
   
-- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) "sudo chown gcs-app:gcs-app /etc/gcs-app/application.conf"
+- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo chown gcs-app:gcs-app /etc/gcs-app/application.conf
   displayName: 'Modificar Archivo de Configuracion' 
 
-- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) "sudo chown gcs-app:gcs-app /var/log/gcs-app/gcs-app.log"
+- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo chown gcs-app:gcs-app /var/log/gcs-app/gcs-app.log
   displayName: 'Conceder Permisos a Logs' 
 
 - script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo rm /usr/share/gcs-app/RUNNING_PID
