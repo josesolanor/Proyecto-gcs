@@ -29,11 +29,6 @@ steps:
   displayName: 'Empaquetar Aplicacion'
 
 - task: DownloadSecureFile@1
-  name: DataBaseKey
-  displayName: "Descargar Llave Privada de Servidor de Base de Datos"
-  inputs:
-   secureFile: "dbserver-01_key.pem"
-- task: DownloadSecureFile@1
   name: AppServerKey
   displayName: "Descargar Llave Privada de Servidor de Aplicaciones"
   inputs:
