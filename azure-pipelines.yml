@@ -27,25 +27,31 @@ steps:
   displayName: 'Fase de Verificacion de Contribucion'
 
 - script:  |
-   sudo systemctl start docker
-   sudo docker run -d -e POSTGRES_PASSWORD=gcs -e POSTGRES_USER=gcs -e POSTGRES_DB=gcs -p 127.0.0.1:5432:5432 postgres:9.5
-   export PGPASSWORD='gcs'
-   until psql -h "127.0.0.1" -U "gcs" -c '\l'; do
-   >&2 echo "Database no esta lista - esperando..."
-   sleep 1
-   done
-   >&2 echo "Database lista! ;)"
+    sbt test        
+    sudo systemctl start docker
+    sudo docker run -d --name postgres-docker -e POSTGRES_PASSWORD=gcs -e POSTGRES_USER=gcs -e POSTGRES_DB=gcs -p 127.0.0.1:5432:5432 postgres:9.5
+    sudo timeout 90s bash -c 'until docker exec postgres-docker pg_isready; do sleep 5; done'        
+    sbt "project gcsAppIT" test
+    
+#   sudo systemctl start docker
+#   sudo docker run -d -e POSTGRES_PASSWORD=gcs -e POSTGRES_USER=gcs -e POSTGRES_DB=gcs -p 127.0.0.1:5432:5432 postgres:9.5
+#   export PGPASSWORD='gcs'
+#   until psql -h "127.0.0.1" -U "gcs" -c '\l'; do
+#   >&2 echo "Database no esta lista - esperando..."
+#   sleep 1
+#   done
+#   >&2 echo "Database lista! ;)"
   displayName: 'Fase de Verificacion de Pruebas de Integracion'
 
-- task: CmdLine@2
-  inputs:
-    script: 'sbt "project gcsAppIT" test'
-    
-#- task: DownloadSecureFile@1
-#  name: AppServerKey
-#  displayName: "Descargar Llave Privada de Servidor de Aplicaciones"
+#- task: CmdLine@2
 #  inputs:
-#   secureFile: "WebServer_key.pem"
+#    script: 'sbt "project gcsAppIT" test'
+    
+- task: DownloadSecureFile@1
+  name: AppServerKey
+  displayName: "Descargar Llave Privada de Servidor de Aplicaciones"
+  inputs:
+   secureFile: "WebServer_key.pem"
 
 - script:  |
    sbt rpm:packageBin
