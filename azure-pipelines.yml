@@ -40,10 +40,10 @@ steps:
   displayName: 'Fase de Verificacion de Pruebas de Integracion'
 
 - task: DownloadSecureFile@1
-   name: AppServerKey
-   displayName: "Descargar Llave Privada de Servidor de Aplicaciones"
-   inputs:
-    secureFile: "WebServer_key.pem"
+  name: AppServerKey
+  displayName: "Descargar Llave Privada de Servidor de Aplicaciones"
+  inputs:
+   secureFile: "WebServer_key.pem"
 
 - script:  |
    sbt rpm:packageBin
