@@ -28,14 +28,8 @@ steps:
 
 - script:  |
    sudo systemctl start docker
-   sudo docker run -d -e POSTGRES_PASSWORD=gcs -e POSTGRES_USER=gcs -e POSTGRES_DB=gcs -p 127.0.0.1:5432:5432 postgres:9.5
-   export PGPASSWORD='gcs'
-   until psql -h "127.0.0.1" -U "gcs" -c '\l'; do
-   >&2 echo "Base de datos en espera"
-   sleep 1
-   done
-   >&2 echo "Base de Datos listo"
-   sudo bash -c "echo '127.0.0.1    dbserver' >> /etc/hosts"
+   sudo docker run -d --name postgres-docker -e POSTGRES_PASSWORD=gcs -e POSTGRES_USER=gcs -e POSTGRES_DB=gcs -p 127.0.0.1:5432:5432 postgres:9.5
+   sudo timeout 90s bash -c 'until docker exec postgres-docker pg_isready; do sleep 5; done'
    sbt "project gcsAppIT" test
   displayName: 'Fase de Verificacion de Pruebas de Integracion'
 
