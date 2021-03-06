@@ -17,14 +17,14 @@ steps:
    sudo apt-get update -y
    sudo apt-get install default-jre -y
    sudo apt-get install openssh-server -y
-displayName: 'Instalando Dependencias'
+  displayName: 'Instalando Dependencias'
 
 - script:  |
    git clone https://github.com/josesolanor/Proyecto-gcs.git
    cd Proyecto-gcs
    sbt compile
    sbt test
-displayName: 'Fase de Verificacion de Contribucion'
+  displayName: 'Fase de Verificacion de Contribucion'
 
 - script:  |
    sudo systemctl start docker
@@ -37,7 +37,7 @@ displayName: 'Fase de Verificacion de Contribucion'
    >&2 echo "Base de Datos listo"
    sudo bash -c "echo '127.0.0.1    dbserver' >> /etc/hosts"
    sbt "project gcsAppIT" test
-displayName: 'Fase de Verificacion de Pruebas de Integracion'
+  displayName: 'Fase de Verificacion de Pruebas de Integracion'
 
 - task: DownloadSecureFile@1
    name: AppServerKey
@@ -62,4 +62,4 @@ displayName: 'Fase de Verificacion de Pruebas de Integracion'
    sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo chown gcs-app:gcs-app /var/log/gcs-app/gcs-app.log
    sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo rm /usr/share/gcs-app/RUNNING_PID
    sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo systemctl restart gcs-app.service
-displayName: 'Fase de Despliegue a servidor de pruebas'
+  displayName: 'Fase de Despliegue a servidor de pruebas'
