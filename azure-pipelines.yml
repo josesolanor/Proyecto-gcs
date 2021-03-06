@@ -27,15 +27,18 @@ steps:
   displayName: 'Fase de Verificacion de Contribucion'
 
 - script:  |       
+    echo 'Ejecutando pruebas de integracion'
     sudo systemctl start docker
     sudo docker run -d -e POSTGRES_PASSWORD=gcs -e POSTGRES_USER=gcs -e POSTGRES_DB=gcs -p 127.0.0.1:5432:5432 postgres:9.5
     export PGPASSWORD='gcs'
     until psql -h "127.0.0.1" -U "gcs" -c '\l'; do
-    >&2 echo "Database no esta lista - esperando..."
-    sleep 1
+      >&2 echo "Database no esta lista - esperando..."
+      sleep 1
     done
     >&2 echo "Database lista! ;)"
-    sbt "project gcsAppIT" test  
+    sudo bash -c "echo '127.0.0.1    dbserver' >> /etc/hosts"
+    sbt "project gcsAppIT" test
+    echo 'Pruebas de integracion ejecutadas'
   displayName: 'Fase de Verificacion de Pruebas de Integracion'
   
 - task: DownloadSecureFile@1
