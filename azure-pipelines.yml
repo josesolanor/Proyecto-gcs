@@ -61,10 +61,9 @@ steps:
 - script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo chown gcs-app:gcs-app /etc/gcs-app/application.conf
   displayName: 'Permisos al Archivo de Configuracion'
   
-- script: |
-      sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo sed -i 's/localhost:5432/$(hostdb):5432/' /etc/gcs-app/application.conf
-      sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo sed -i 's/localhost:9000/$(ipapp)/' /etc/gcs-app/application.conf
-displayName: 'Modificando Rutas al Archivo de Configuracion'
+- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo sed -i 's/localhost:5432/$(hostdb):5432/' /etc/gcs-app/application.conf
+- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo sed -i 's/localhost:9000/$(ipapp)/' /etc/gcs-app/application.conf
+  displayName: 'Modificando Rutas al Archivo de Configuracion'
   
 - script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo chown gcs-app:gcs-app /etc/gcs-app/application.conf
   displayName: 'Modificar Archivo de Configuracion' 
