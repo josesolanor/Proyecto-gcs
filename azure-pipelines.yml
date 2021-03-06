@@ -42,8 +42,7 @@ steps:
 - script:  |
    sbt rpm:packageBin
    sudo cp $(AppServerKey.secureFilePath) /home/vsts/ && sudo chmod 600 /home/vsts/WebServer_key.pem
-   sudo scp -v -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem  \ 
-    --/home/vsts/work/1/s/gcs-app/target/rpm/RPMS/noarch/gcs-app-2.8.x-1.noarch.rpm $(username)@$(ipapp):/home/$(username)
+   sudo scp -v -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem /home/vsts/work/1/s/gcs-app/target/rpm/RPMS/noarch/gcs-app-2.8.x-1.noarch.rpm $(username)@$(ipapp):/home/$(username)
    sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo systemctl stop gcs-app.service
    sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo rpm -e gcs-app-2.8.x-1.noarch
    sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo systemctl daemon-reload
