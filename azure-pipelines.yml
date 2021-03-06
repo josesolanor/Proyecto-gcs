@@ -35,9 +35,12 @@ steps:
    sleep 1
    done
    >&2 echo "Database lista! ;)"
-   sbt "project gcsAppIT" test
   displayName: 'Fase de Verificacion de Pruebas de Integracion'
 
+- task: CmdLine@2
+  inputs:
+    script: 'sbt "project gcsAppIT" test'
+    
 - task: DownloadSecureFile@1
   name: AppServerKey
   displayName: "Descargar Llave Privada de Servidor de Aplicaciones"
