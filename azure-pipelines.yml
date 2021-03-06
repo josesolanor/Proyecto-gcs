@@ -13,66 +13,53 @@ variables:
 - group: PermisosServer
 
 steps:
-- script: sudo apt-get update -y
-  displayName: 'Actualizar Repositorio'
+- script: |
+   sudo apt-get update -y
+   sudo apt-get install default-jre -y
+   sudo apt-get install openssh-server -y
+displayName: 'Instalando Dependencias'
 
-- script: sudo apt-get install default-jre -y
-  displayName: 'Instalar Java'
+- script:  |
+   git clone https://github.com/josesolanor/Proyecto-gcs.git
+   cd Proyecto-gcs
+   sbt compile
+   sbt test
+displayName: 'Fase de Verificacion de Contribucion'
 
-- script: sudo apt-get install openssh-server -y
-  displayName: 'Instalar openssh'
-
-- script: sbt test
-  displayName: 'Correr Pruebas Unitarias'
-
-- script: sbt rpm:packageBin
-  displayName: 'Empaquetar Aplicacion'
+- script:  |
+   sudo systemctl start docker
+   sudo docker run -d -e POSTGRES_PASSWORD=gcs -e POSTGRES_USER=gcs -e POSTGRES_DB=gcs -p 127.0.0.1:5432:5432 postgres:9.5
+   export PGPASSWORD='gcs'
+   until psql -h "127.0.0.1" -U "gcs" -c '\l'; do
+   >&2 echo "Base de datos en espera"
+   sleep 1
+   done
+   >&2 echo "Base de Datos listo"
+   sudo bash -c "echo '127.0.0.1    dbserver' >> /etc/hosts"
+   sbt "project gcsAppIT" test
+displayName: 'Fase de Verificacion de Pruebas de Integracion'
 
 - task: DownloadSecureFile@1
-  name: AppServerKey
-  displayName: "Descargar Llave Privada de Servidor de Aplicaciones"
-  inputs:
-   secureFile: "WebServer_key.pem"
-   
-- script: sudo cp $(AppServerKey.secureFilePath) /home/vsts/ && sudo chmod 600 /home/vsts/WebServer_key.pem
-  displayName: "Aplicando Permisos"
+   name: AppServerKey
+   displayName: "Descargar Llave Privada de Servidor de Aplicaciones"
+   inputs:
+    secureFile: "WebServer_key.pem"
 
-- script: sudo scp -v -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem /home/vsts/work/1/s/gcs-app/target/rpm/RPMS/noarch/gcs-app-2.8.x-1.noarch.rpm $(username)@$(ipapp):/home/$(username)
-  displayName: 'Importar RPM a VM Azure'
-
-- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo systemctl stop gcs-app.service
-  displayName: 'Deteniendo el Servicio'
-
-- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo rpm -e gcs-app-2.8.x-1.noarch
-  displayName: 'Desinstalando Aplicacion'
-
-- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo systemctl daemon-reload
-  displayName: 'Reiniciado Demonio'
-
-- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo rpm -i gcs-app-2.8.x-1.noarch.rpm
-  displayName: 'Instalar Aplicacion'
-
-- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo chown -R gcs-app /usr/share/gcs-app/
-  displayName: 'Conceder Permisos al usuario'
-
-- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo chgrp -R gcs-app /usr/share/gcs-app/
-  displayName: 'Conceder Permisos al Grupo' 
-
-- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo chown gcs-app:gcs-app /etc/gcs-app/application.conf
-  displayName: 'Permisos al Archivo de Configuracion'
-  
-- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo sed -i 's/localhost:5432/$(hostdb):5432/' /etc/gcs-app/application.conf
-- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo sed -i 's/localhost:9000/$(ipapp)/' /etc/gcs-app/application.conf
-  displayName: 'Modificando Rutas al Archivo de Configuracion'
-  
-- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo chown gcs-app:gcs-app /etc/gcs-app/application.conf
-  displayName: 'Modificar Archivo de Configuracion' 
-
-- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo chown gcs-app:gcs-app /var/log/gcs-app/gcs-app.log
-  displayName: 'Conceder Permisos a Logs' 
-
-- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo rm /usr/share/gcs-app/RUNNING_PID
-  displayName: 'Reiniciar Aplicacion'
-
-- script: sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo systemctl restart gcs-app.service
-  displayName: 'Reiniciar Aplicacion'
+- script:  |
+   sbt rpm:packageBin
+   sudo cp $(AppServerKey.secureFilePath) /home/vsts/ && sudo chmod 600 /home/vsts/WebServer_key.pem
+   sudo scp -v -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem /home/vsts/work/1/s/gcs-app/target/rpm/RPMS/noarch/gcs-app-2.8.x-1.noarch.rpm $(username)@$(ipapp):/home/$(username)
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo systemctl stop gcs-app.service
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo rpm -e gcs-app-2.8.x-1.noarch
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo systemctl daemon-reload
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo rpm -i gcs-app-2.8.x-1.noarch.rpm
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo chown -R gcs-app /usr/share/gcs-app/
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo chgrp -R gcs-app /usr/share/gcs-app/
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo chown gcs-app:gcs-app /etc/gcs-app/application.conf
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo sed -i 's/localhost:5432/$(hostdb):5432/' /etc/gcs-app/application.conf
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo sed -i 's/localhost:9000/$(ipapp)/' /etc/gcs-app/application.conf
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo chown gcs-app:gcs-app /etc/gcs-app/application.conf
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo chown gcs-app:gcs-app /var/log/gcs-app/gcs-app.log
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo rm /usr/share/gcs-app/RUNNING_PID
+   sudo ssh -o StrictHostKeyChecking=no -i /home/vsts/WebServer_key.pem $(username)@$(ipapp) sudo systemctl restart gcs-app.service
+displayName: 'Fase de Despliegue a servidor de pruebas'
